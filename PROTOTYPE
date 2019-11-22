@@ -1,0 +1,373 @@
+
+// CSC 300 Fall 2019
+/*
+ - class for introducing graphs & graph algorithms
+ - for simplification, we have the following restrictions:
+    - less than 100 nodes
+    - no self edges
+    - all graph description files will be weighted
+    - all weights > 0
+
+ - node order
+    print out the nodes, on 1 line, in the order dictated by algorithm
+ - spanning tree
+    print out edges     start-end   in the order dictated by algorithm
+
+
+
+Graph Description File format
+  Number of Nodes
+  Number of Edges
+  Source  Destination  Weight     [ for each edge ]
+
+*/
+
+#include <iostream>
+#include <fstream>
+#include <queue>
+#include <stack>
+
+
+using namespace std;
+
+class graph
+{
+        public:
+                graph();
+                graph( int x );              // constructor, x is # of nodes
+                void bfs( int x );           // breadth-first node order
+                void bfssp( int x );         // breadth-first spanning tree
+                void dfs( int x );           // depth-first node order
+                void dfssp( int x );         // depth-first spanning tree
+                void PrintArr();               // print matrix
+                void fill( ifstream& file ); // fill graph from data file
+        private:
+                int Array[101][101];
+                int y;
+};
+
+
+//Default Consttructor
+graph:: graph()
+{
+
+        //Sets up the Matrix
+        //Array[101][101];
+        y = 101;
+        for(int k=0;k<101;k++)
+                {
+                        for(int j=0;j<101;j++)
+                        {
+                                Array[k][j]=0;
+                        }
+                }
+
+
+}
+
+//Constructor given an int
+graph::graph(int x)
+{
+
+        y=x+1;
+
+        //Sets up the Matrix
+        //Array[y][y];
+        for(int k=0;k<(y);k++)
+                {
+                        for(int j=0;j<(y);j++)
+                        {
+                                Array[k][j]=0;
+                        }
+                }
+
+
+}
+
+void graph::fill(ifstream& ifp)
+{
+        // reading in number of nodes
+    int ECount=0;
+    int FirstNum=0;
+    int SecondNum=0;
+    int Weight=0;
+
+        ifp >> ECount;
+
+
+        //create graph with an an adjadceny matrix of
+    // size = num of nodes x num of nodes
+
+          for(int k=1;k<=ECount;k++)
+        {
+                ifp >> FirstNum;
+                ifp >> SecondNum;
+                ifp >> Weight;
+
+                        Array[FirstNum][SecondNum]=Weight;
+                        Array[SecondNum][FirstNum]=Weight;
+
+        }
+
+                return;
+}
+
+
+
+void graph::bfs(int StartingNode)
+{
+
+
+        //1 for marked. 0 for not
+        int MarkArray[y]={0};
+        queue <int> D;
+
+        D.push(StartingNode);
+
+        int v;
+        while(!D.empty())
+        {
+                v = D.front();
+                D.pop();
+                if(MarkArray[v]!=1)
+                {
+                        printf(" %d ", v);
+                        MarkArray[v]=1;
+                }
+
+                        //i=y-1 and i>=1 for dfs
+                        for(int i=1;i< y;i++)
+                        {
+                                if(Array[v][i] && MarkArray[i]!=1)
+                                        D.push(i);
+                        }
+        }
+
+        printf("\n");
+        return;
+}
+
+void graph::bfssp(int StartingNode)
+{
+        printf("BFS SP: \n");
+        int MarkArray[y]={0};
+        queue <int> D;
+
+        D.push(StartingNode);
+
+        int v;
+        while(!D.empty())
+        {
+                v=D.front();
+                D.pop();
+                if(MarkArray[v]!=1)
+                {
+                //      printf(" %d ",v);
+                        MarkArray[v]=1;
+                }
+
+
+                for(int i=1;i<y; i++)
+                {
+                        if(Array[v][i] && MarkArray[i]!=1)
+                        {
+                                printf("%d-%d\n", v, i);
+                                MarkArray[i]=1;
+                                D.push(i);
+                        }
+                }
+
+        }
+
+}
+
+void graph::dfs(int StartingNode)
+{
+        printf("Depth: ");
+        int MarkArray[y]={0};
+        stack <int> D;
+
+        int v;
+        D.push(StartingNode);
+
+
+        while(!D.empty())
+        {
+                v=D.top();
+                D.pop();
+                if(MarkArray[v]==0)
+                {
+                        printf(" %d ", v);
+                        MarkArray[v]=1;
+
+                }
+
+                for(int i=y;i>=1;i--)
+                {
+                        if(Array[v][i]&&MarkArray[i]==0)
+                        {
+                                D.push(i);
+                        }
+
+                }
+
+        }
+
+        printf("\n");
+}
+
+void graph::dfssp(int StartingNode)
+{
+        printf("DFS SP: \n");
+        int MarkArray[y]={0};
+        stack <int> D;//Future Node?:
+        stack <int> P;//Prev node
+
+
+        int v,x;
+        int Prev=0;
+        D.push(StartingNode);
+
+
+        while(!D.empty())
+        {
+
+                v=D.top();
+                D.pop();
+
+                //printf("POP AT BEGIN: %d removed from stack D\n", v);
+
+                if(MarkArray[v]==0)
+                {
+                        //Something up here with previous Array
+                        //Pop here? I think we need a pop to similar to line 232-233.
+                        MarkArray[v]=1;
+
+
+                }
+
+                if(!P.empty())
+                {
+                        x=P.top();
+                        P.pop();
+                //      printf("%d removed from stack P\n", x);
+
+                        printf("%d-%d\n", x, v);
+
+                }
+
+                for(int i=y;i>=1;i--)
+                {
+                        if(Array[v][i]&&MarkArray[i]==0)
+                        {
+                                //Something over here with the assigning the prev stack
+
+                                P.push(v);
+                                //printf("%d added to stack p\n", v);
+                                D.push(i);
+                                //printf("%d added to stack d\n",i);
+                        }
+                }
+
+                printf("\n");
+
+
+        }
+
+
+}
+
+void graph::PrintArr()
+{
+        printf("Now Printing Matrix: \n");
+
+        for(int k=1;k<y;k++)
+        {
+                for(int j=1;j<y;j++)
+                {
+                        printf("%d", Array[k][j]);
+                }
+                printf("\n");
+        }
+
+        printf("Done printing\n");
+
+        return;
+}
+
+int main( int argc, char *argv[] )
+{
+
+        int location;
+        ifstream ifp;
+
+        //checking to see if file was entered on command line
+        if ( argc != 2 )
+        {
+                cout << "File was not entered\n";
+                return 2;
+        }
+
+        ifp.open( argv[1] );
+
+        // checking to see if file was opened successfully
+        if( ! ifp.is_open() )
+        {
+                cout << "File could not be opened\n";
+                return 3;
+        }
+
+        int VCount=0;
+
+
+        ifp >>VCount;
+        graph g( VCount );
+
+        g.fill(ifp);
+
+
+        int StartingNode=0;
+        cout << "Please give node you want to start with";
+        cin >> StartingNode;
+
+        g.PrintArr();
+
+        printf("Breadth: ");
+        g.bfs(StartingNode);
+        g.dfs(StartingNode);
+        g.bfssp(StartingNode);
+        g.dfssp(StartingNode);
+/*
+        //ask for starting location
+        cout << "Enter the starting location: ";
+        cin >> location;
+
+        //fill adjacency matrix
+        g.fill( ifp );
+
+        //print the matrix
+        g.mprint();
+        cout << endl << endl;
+
+        //ask for starting location
+        cout << "Enter the starting location: ";
+        cin >> location;
+
+        // calculate DFS
+        g.dfs( location );
+        cout << endl << endl;
+
+        //calculate DFS-SP
+        g.dfssp( location );
+        cout << endl << endl;
+
+        //calculate BFS
+        g.bfs( location );
+        cout << endl << endl;
+
+        //calculate BFS-SP
+        g.bfssp( location );
+        cout << endl << endl;
+*/
+        return 0;
+}
